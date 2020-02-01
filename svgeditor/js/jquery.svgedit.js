@@ -96,9 +96,15 @@ $.widget( ".svgedit", {
     },
 
 	// add element
+	// TODO: kinda ugly
 	
 	addElement: function(element) {
-		this._svg.append(element);
+		//this._svg.append(element);
+		//console.log($(element));
+		var added = d3.select(this._svg.context)
+			.append('g').attr('class', 'addedsvg');
+			//.append( $(element).clone()[0] );
+		$(added._groups[0][0]).append($(element).clone());
 	},
 
 	// change content
@@ -187,6 +193,7 @@ $.widget( ".svgedit", {
 		}
 
 		if( $(event.target).hasClass('svg-rotate') ) {
+			// TODO: ITS JUMPING AGAIN FUUUUU
 			this._movement = this.MovementCode.Rotate;
 			this._offset.x = event.clientX;
 			this._offset.y = event.clientY;
