@@ -9,7 +9,7 @@ $.widget( ".svgedit", {
 	_movement: 0,                          // what movement is the svg doing
 	_offset: { x: 0, y: 0 },               // position of the selection
 	_transformOffset: null,                // transformations after click
-	_rectOffset: null,                     // bounding BBox after click
+	_rectOffset: null,                     // bounding rectangle after click
 	MovementCode: { None: 0,               // movement codes
 					Moving: 1,
 					TopLeft: 2,
@@ -193,7 +193,6 @@ $.widget( ".svgedit", {
 		}
 
 		if( $(event.target).hasClass('svg-rotate') ) {
-			// TODO: ITS JUMPING AGAIN FUUUUU
 			this._movement = this.MovementCode.Rotate;
 			this._offset.x = event.clientX;
 			this._offset.y = event.clientY;
@@ -202,8 +201,8 @@ $.widget( ".svgedit", {
 
 			// if image is rotated, the image will need offsetting
 			var alpha = this._transformOffset.rotate * Math.PI / 180;
-			var x = (this._transformOffset.scaleX * this._rectOffset.width)/2;
-			var y = (this._transformOffset.scaleY * this._rectOffset.height)/2;
+			var x = this._rectOffset.width/2;
+			var y = this._rectOffset.height/2;
 			var e = -Math.cos(alpha)*x + Math.sin(alpha)*y + x;
 			var f = -Math.sin(alpha)*x - Math.cos(alpha)*y + y;
 			this._transformOffset.translateX -= e;
@@ -510,8 +509,10 @@ $.widget( ".svgedit", {
 			var self = this;
 
 			// TODO: optimize
-			var a1 = this._rectOffset.x + (this._transformOffset.scaleX * this._rectOffset.width)/2;
-			var a2 = this._rectOffset.y + (this._transformOffset.scaleY * this._rectOffset.height)/2;
+			var a1 = this._rectOffset.x + this._rectOffset.width/2;
+			var a2 = this._rectOffset.y + this._rectOffset.height/2;
+
+			var bbox = this._selected[0].getBBox();
 
 			var b1 = event.clientX - a1;
 			var b2 = event.clientY - a2;
@@ -525,14 +526,14 @@ $.widget( ".svgedit", {
 
 			if(b1 < 0) {
 				d3.select('.svgcontrols')._groups[0][0].transform.baseVal.getItem(1).setRotate(
-					rotate, (self._transformOffset.scaleX * self._rectOffset.width)/2, (self._transformOffset.scaleY * self._rectOffset.height)/2 );
+					rotate, self._rectOffset.width/2, self._rectOffset.height/2 );
 				this._selected[0].transform.baseVal.getItem(1).setRotate(
-					rotate, (self._transformOffset.scaleX * self._rectOffset.width)/2, (self._transformOffset.scaleY * self._rectOffset.height)/2 );
+					rotate, self._rectOffset.width/2, self._rectOffset.height/2 );
 			} else {
 				d3.select('.svgcontrols')._groups[0][0].transform.baseVal.getItem(1).setRotate(
-					-rotate, (self._transformOffset.scaleX * self._rectOffset.width)/2, (self._transformOffset.scaleY * self._rectOffset.height)/2 );
+					-rotate, self._rectOffset.width/2, self._rectOffset.height/2 );
 				this._selected[0].transform.baseVal.getItem(1).setRotate(
-					-rotate, (self._transformOffset.scaleX * self._rectOffset.width)/2, (self._transformOffset.scaleY * self._rectOffset.height)/2 );
+					-rotate, self._rectOffset.width/2, self._rectOffset.height/2 );
 			}
 
 		}
