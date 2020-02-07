@@ -142,6 +142,11 @@ $.widget( ".svgedit", {
 		this._downloadlink[0].click();
 	},
 
+	changeColor: function(color) {
+		if(this._selected == null) return;
+		this._selected[0].style.fill = color;
+	},
+
 	// TODO: custom width and height
 
 	toString: function() {

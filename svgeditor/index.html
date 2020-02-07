@@ -78,15 +78,34 @@
 				</svg>
 			</div>
 		</div>
-		<div class="wrapper" id="slidein-wrapper" style="position: absolute; left: 370px;">
-			<span id="tools">
+		<div class="wrapper" id="slidein-wrapper" style="position: absolute; left: 360px; width: 100%;">
+			<nav class="navbar navbar-expand-lg navbar-light bg-white">
+				<div class="pickable-colors">
+					<svg width="45" height="30" style="fill: magenta; margin-right: 5px;">
+						<rect width="80" height="40"></rect>
+					</svg>
+					<svg width="45" height="30" style="fill: red; margin-right: 5px;">
+						<rect width="80" height="40"></rect>
+					</svg>
+					<svg width="45" height="30" style="fill: green; margin-right: 5px;">
+						<rect width="80" height="40"></rect>
+					</svg>
+					<svg width="45" height="30" style="fill: orange; margin-right: 5px;">
+						<rect width="80" height="40"></rect>
+					</svg>
+					<svg width="45" height="30" style="fill: blue; margin-right: 5px;">
+						<rect width="80" height="40"></rect>
+					</svg>
+				</div>
+			</nav>
+			<span id="tools" style="margin-top: 20px; margin-left: 35px;">
 				<input id="title" value="Untitled" style="width:100%"></input>
 				<hr/>
 				<button id="load">Load</button>
 				<button id="save">Save</button>
 				<button id="clear">Clear</button>
 			</span>
-			<span id="content" style="background-color: white;">
+			<span id="content" style="background-color: white; margin-top: 20px;">
 				<svg id="stage" width="600" height="400" viewBox="0 0 600 400"></svg>
 				<input id="textarea" type="hidden"></input>
 			</span>
@@ -141,6 +160,10 @@
 
 			$('.addable-svgs svg').click(function(event) {
 				$('#stage').svgedit('addElement', event.target);
+			});
+
+			$('.pickable-colors svg').click(function(event) {
+				$('#stage').svgedit('changeColor', $(event.target).parent("svg")[0].style.fill);
 			});
 
 			// LOAD
