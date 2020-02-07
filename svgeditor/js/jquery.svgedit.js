@@ -39,6 +39,7 @@ $.widget( ".svgedit", {
 
     _create: function () {
 		var self = this;
+		var drag = d3.drag();
 
 		this._svg = this.element;
 
@@ -46,19 +47,25 @@ $.widget( ".svgedit", {
 			style: 'display: none;',
 		}).appendTo('body');
 
-		// TODO: use d3-drag
+		d3.select(this._svg.context).call(drag.on("start", function() {
+			if(d3.event.sourceEvent.type == "touchstart") {
+				self._reposition(d3.event.sourceEvent.changedTouches[0]);
+			} else {
+				self._reposition(d3.event.sourceEvent);
+			}
+		}));
 
-		this._svg.mousedown(function(event) {
-			self._reposition(event);
-		});
-
-		$(window).mouseup(function(event) {
+		d3.select(this._svg.context).call(drag.on("end", function() {
 			self._stopmoving();
-		});
+		}));
 
-		this._svg.mousemove(function(event) {
-			self._movesvg(event);
-		});
+		d3.select(this._svg.context).call(drag.on("drag", function() {
+			if(d3.event.sourceEvent.type == "touchmove") {
+				self._movesvg(d3.event.sourceEvent.changedTouches[0]);
+			} else {
+				self._movesvg(d3.event.sourceEvent);
+			}
+		}));
     },
 
     // destructor called on element deletion
@@ -200,6 +207,7 @@ $.widget( ".svgedit", {
 			this._rectOffset = this._selected[0].getBoundingClientRect();
 
 			// if image is rotated, the image will need offsetting
+			// TODO: center point still not quite consistent
 			var alpha = this._transformOffset.rotate * Math.PI / 180;
 			var x = this._rectOffset.width/2;
 			var y = this._rectOffset.height/2;
