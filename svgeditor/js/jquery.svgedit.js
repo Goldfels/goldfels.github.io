@@ -66,6 +66,11 @@ $.widget( ".svgedit", {
 				self._movesvg(d3.event.sourceEvent);
 			}
 		}));
+
+		$(this._svg).dblclick(function(event) {
+			self._duplicate(event);
+		});
+
     },
 
     // destructor called on element deletion
@@ -557,6 +562,17 @@ $.widget( ".svgedit", {
 			this._updateSelection( this._selected[0] );
 
 		}
+	},
+
+	_duplicate: function(event) {
+		if ( event.target.isSameNode( this._svg.context ) ) {
+			return;
+		}
+		var target = $(event.target).parents(".addedsvg");
+		var newelement = target.clone().appendTo(this._svg);
+		var transform = this._getTransformations(newelement.attr('transform'));
+		newelement[0].transform.baseVal.getItem(0).setTranslate( transform.translateX + 25, transform.translateY + 25 );
+		this._updateSelection(newelement[0]);
 	},
 
 	_stopmoving: function() {
