@@ -42,6 +42,7 @@ $.widget( ".svgedit", {
 		var drag = d3.drag();
 
 		this._svg = this.element;
+		this._prepSVGfield();
 
 		this._downloadlink = $('<a>', {
 			style: 'display: none;',
@@ -70,7 +71,6 @@ $.widget( ".svgedit", {
 		$(this._svg).dblclick(function(event) {
 			self._duplicate(event);
 		});
-
     },
 
     // destructor called on element deletion
@@ -131,6 +131,7 @@ $.widget( ".svgedit", {
 	
 	clear: function() {
 		this._svg.context.textContent = '';
+		this._prepSVGfield();
 	},
 
 	// save svg
@@ -317,32 +318,42 @@ $.widget( ".svgedit", {
 				.attr('y', -10)
 				.attr('width', rect.width + 20)
 				.attr('height', rect.height + 20)
-				.attr('style', 'stroke: red; fill-opacity: 0; pointer-events: none;');
+				.attr('style', 'stroke: #09dae2; fill-opacity: 0; pointer-events: none;');
 			controls.append('circle')
 				.attr('class', 'svg-scale-topleft')
-				.attr('r', 5)
+				.attr('r', 7)
 				.attr('cx', -10)
-				.attr('cy', -10);
+				.attr('cy', -10)
+				.attr('style', 'fill: white; stroke: lightgrey;');
 			controls.append('circle')
 				.attr('class', 'svg-scale-topright')
-				.attr('r', 5)
+				.attr('r', 7)
 				.attr('cx', rect.width + 10)
-				.attr('cy', -10);
+				.attr('cy', -10)
+				.attr('style', 'fill: white; stroke: lightgrey;');
 			controls.append('circle')
 				.attr('class', 'svg-scale-bottomleft')
-				.attr('r', 5)
+				.attr('r', 7)
 				.attr('cx', -10)
-				.attr('cy', rect.height + 10);
+				.attr('cy', rect.height + 10)
+				.attr('style', 'fill: white; stroke: lightgrey;');
 			controls.append('circle')
 				.attr('class', 'svg-scale-bottomright')
-				.attr('r', 5)
+				.attr('r', 7)
 				.attr('cx', rect.width + 10)
-				.attr('cy', rect.height + 10);
-			controls.append('circle')
+				.attr('cy', rect.height + 10)
+				.attr('style', 'fill: white; stroke: lightgrey;');
+			//controls.append('circle')
+			//	.attr('class', 'svg-rotate')
+			//	.attr('r', 7)
+			//	.attr('cx', rect.width/2)
+			//	.attr('cy', rect.height + 30)
+			//	.attr('style', 'fill: white; stroke: lightgrey;');
+			controls.append('use')
 				.attr('class', 'svg-rotate')
-				.attr('r', 5)
-				.attr('cx', rect.width/2)
-				.attr('cy', rect.height + 30);
+				.attr('xlink:href', '#rotatecircle')
+				.attr('x', rect.width/2)
+				.attr('y', rect.height + 30);
 		} else {
 			var transform = this._getTransformations( $(element).attr('transform') );
 			var rect = element.getBBox();
@@ -367,8 +378,8 @@ $.widget( ".svgedit", {
 				.attr('cx', rect.width + 10)
 				.attr('cy', rect.height + 10);
 			controls.select('.svg-rotate')
-				.attr('cx', rect.width/2)
-				.attr('cy', rect.height + 30);
+				.attr('x', rect.width/2)
+				.attr('y', rect.height + 30);
 		}
 	},
 
@@ -400,8 +411,8 @@ $.widget( ".svgedit", {
 				.attr('cx', rect.width + 10)
 				.attr('cy', rect.height + 10);
 			controls.select('.svg-rotate')
-				.attr('cx', rect.width/2)
-				.attr('cy', rect.height + 30);
+				.attr('x', rect.width/2)
+				.attr('y', rect.height + 30);
 
 		} else if(this._movement == this.MovementCode.BottomLeft) {
 
@@ -441,8 +452,8 @@ $.widget( ".svgedit", {
 				.attr('cx', rect.width + 10)
 				.attr('cy', rect.height + 10);
 			controls.select('.svg-rotate')
-				.attr('cx', rect.width/2)
-				.attr('cy', rect.height + 30);
+				.attr('x', rect.width/2)
+				.attr('y', rect.height + 30);
 
 		} else if(this._movement == this.MovementCode.TopRight) {
 
@@ -482,8 +493,8 @@ $.widget( ".svgedit", {
 				.attr('cx', rect.width + 10)
 				.attr('cy', rect.height + 10);
 			controls.select('.svg-rotate')
-				.attr('cx', rect.width/2)
-				.attr('cy', rect.height + 30);
+				.attr('x', rect.width/2)
+				.attr('y', rect.height + 30);
 		} else if ( this._movement == this.MovementCode.TopLeft ) {
 
 			var rect = this._selected[0].getBBox();
@@ -520,8 +531,8 @@ $.widget( ".svgedit", {
 				.attr('cx', rect.width + 10)
 				.attr('cy', rect.height + 10);
 			controls.select('.svg-rotate')
-				.attr('cx', rect.width/2)
-				.attr('cy', rect.height + 30);
+				.attr('x', rect.width/2)
+				.attr('y', rect.height + 30);
 
 		} else if ( this._movement == this.MovementCode.Rotate ) {
 			var self = this;
@@ -587,6 +598,20 @@ $.widget( ".svgedit", {
 				].join('');
 			});
 		}
+	},
+
+	_prepSVGfield: function() {
+		this._svg.context.innerHTML = `
+		<defs id="rotatedef">
+			<g fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="rotatecircle">
+				<circle class="svg-rotate" r="7" cx="0" cy="0" style="fill: white; stroke: lightgrey;"></circle>
+				<g transform="scale(0.3, 0.3) translate(-11.5, -11.5)">
+					<polyline points="23 4 23 10 17 10"></polyline>
+					<polyline points="1 20 1 14 7 14"></polyline>
+					<path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+				</g>
+			</g>
+		</defs>`;
 	},
 
 	_getTransformations: function(transform) {
