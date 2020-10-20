@@ -23,6 +23,8 @@ $.widget( ".svgedit", {
 					Rotate: 6,
 					},
 
+	// Control options
+	// Currently unused
     options: {
         breadth: 250,       // panel width or height depending on where its docked
         curve:10,           // the curve of the handle
@@ -39,8 +41,7 @@ $.widget( ".svgedit", {
         toClose: "click"    // what actions close the panel
     },
 
-    // one time control initialisation
-
+    // one time control initialization
     _create: function () {
 		var self = this;
 		var drag = d3.drag();
@@ -51,13 +52,16 @@ $.widget( ".svgedit", {
 		this._svg = this.element;
 		this._prepSVGfield();
 
+		// Hidden download link for saving
 		this._downloadlink = $('<a>', {
 			style: 'display: none;',
 		}).appendTo('body');
 
+		// Event on dragging start
 		d3.select(this._svg.context).call(drag.on("start", function() {
 			// Only move with the move tool
 			if(self._tool == "move") {
+				// Are we touching or using the mouse?
 				if(d3.event.sourceEvent.type == "touchstart") {
 					self._reposition(d3.event.sourceEvent.changedTouches[0]);
 				} else {
@@ -68,14 +72,17 @@ $.widget( ".svgedit", {
 			}
 		}));
 
+		// Event on dragging stop
 		d3.select(this._svg.context).call(drag.on("end", function() {
 			if(self._tool == "move") {
 				self._stopmoving();
 			}
 		}));
 
+		// Event on dragging
 		d3.select(this._svg.context).call(drag.on("drag", function() {
 			if(self._tool == "move") {
+				// Are we touching or using the mouse?
 				if(d3.event.sourceEvent.type == "touchmove") {
 					self._movesvg(d3.event.sourceEvent.changedTouches[0]);
 				} else {
@@ -92,12 +99,11 @@ $.widget( ".svgedit", {
     },
 
     // destructor called on element deletion
-
     _destroy: function () {
     },
 
     // set the control options
-
+	// Currently unused
     _setOption: function ( key, value ) {
 
         var self = this;
@@ -139,29 +145,23 @@ $.widget( ".svgedit", {
 	},
 
 	// change content
-	// TODO: use more jQuery
-	
 	setContent: function(content) {
 		this._svg.context.innerHTML = content.documentElement.innerHTML;
 	},
 
 	// clear everything
-	// TODO: use more jQuery
-	
 	clear: function() {
 		this._svg.context.textContent = '';
 		this._prepSVGfield();
 		this._createCheckpoint();
 	},
 
-	// save svg
-	// TODO: use more jQuery
-	
+	// save png
 	save: function() {
 		// Remove controls if present
 		d3.select(this._svg.context).select('.svgcontrols').remove();
 
-		const canvas = document.querySelector('canvas');
+		const canvas = document.querySelector('#canv');
 		const ctx = canvas.getContext('2d');
     
 		// Render svg to canvas
@@ -176,6 +176,7 @@ $.widget( ".svgedit", {
 		this._downloadlink[0].click();
 	},
 
+	// Change selected object color
 	changeColor: function(color) {
 		this._lastColor = color;
 		if(this._selected == null) return;
@@ -197,6 +198,7 @@ $.widget( ".svgedit", {
 		this._svg.context.innerHTML = this._undoArray[this._undoPos - 1];
 	},
 
+	// Convert current image to svg
 	// TODO: custom width and height
 
 	toString: function() {
@@ -209,9 +211,7 @@ $.widget( ".svgedit", {
 	},
 
     // repositions the panel in the light of css or other visual changes
-
     refresh: function () {
-
         this._reposition();
     },
 
@@ -223,6 +223,7 @@ $.widget( ".svgedit", {
 		this._tool = tool;
 	},
 
+	// Move selected object
     _reposition: function (event) {
 
 		this._movement = this.MovementCode.Moving;
@@ -271,6 +272,7 @@ $.widget( ".svgedit", {
 
 			// if image is rotated, the image will need offsetting
 			// TODO: center point still not quite consistent
+			// a*b = abs(a)*abs(b)*cos(alpha)
 			var alpha = this._transformOffset.rotate * Math.PI / 180;
 			var x = this._rectOffset.width/2;
 			var y = this._rectOffset.height/2;
@@ -302,9 +304,10 @@ $.widget( ".svgedit", {
 
 		if ( target.context.isSameNode( this._svg.context ) === false ) {
 
-			// Getting
+			// When moving object again, reset transformations
 			var transform_text = $(target).attr('transform');
 			if(transform_text == null) {
+				// If there is no transformation, set defaults
 				$(target).attr("transform", function() {
 					return [
 						'translate(0, 0) ',
@@ -335,12 +338,14 @@ $.widget( ".svgedit", {
 			this._updateSelection( target[0] );
 
 		} else {
+			// Deselect
 			this._selected = null;
 
 			this._updateSelection(target.context);
 		}
     },
 
+	// Select
 	_updateSelection: function(element) {
 
 		if ( element.isSameNode( this._svg.context ) ) {
@@ -350,6 +355,7 @@ $.widget( ".svgedit", {
 
 		}
 
+		// If we have no controls, add them
 		if( $(this._svg).find('.svgcontrols').length < 1) {
 			var transform = this._getTransformations( $(element).attr('transform') );
 			var rect = element.getBBox();
@@ -435,6 +441,7 @@ $.widget( ".svgedit", {
 		}
 	},
 
+	// Handle scaling and rotation of controls and currently selected object
 	_movesvg: function(event) {
 		if(this._movement == this.MovementCode.BottomRight) {
 			var transform = this._getTransformations( this._selected.attr('transform') );
@@ -602,6 +609,7 @@ $.widget( ".svgedit", {
 			a1 = 0;
 			a2 = 50;
 
+			// a*b = abs(a)*abs(b)*cos(alpha)
 			var rotate = Math.acos((a1*b1+a2*b2)/Math.sqrt((a1*a1+a2*a2)*(b1*b1+b2*b2)))*180/Math.PI;
 			//var transform = this._getTransformations( this._selected.attr('transform') );
 
@@ -618,6 +626,8 @@ $.widget( ".svgedit", {
 			}
 
 		}
+		// Moving the controls and svg
+		// Don't ask me why the check looks like this, for some reason this._movement == This.MovementCode.Moving doesn't work
 		else if ( this._selected && this._movement != this.MovementCode.None ) {
 			this._selected[0].transform.baseVal.getItem(0).setTranslate( event.clientX + this._offset.x, event.clientY + this._offset.y );
 			d3.select('.svgcontrols')._groups[0][0].transform.baseVal.getItem(0).setTranslate( event.clientX + this._offset.x, event.clientY + this._offset.y );
@@ -628,6 +638,7 @@ $.widget( ".svgedit", {
 	},
 
 	_duplicate: function(event) {
+		// Don't duplicate the background
 		if ( event.target.isSameNode( this._svg.context ) ) {
 			return;
 		}
@@ -639,6 +650,7 @@ $.widget( ".svgedit", {
 		this._createCheckpoint();
 	},
 
+	// Executes when current object gets released
 	_stopmoving: function() {
 		this._movement = this.MovementCode.None;
 		if(this._selected) {
@@ -663,6 +675,7 @@ $.widget( ".svgedit", {
 		this._undoPos = this._undoArray.length;
 	},
 
+	// Check undo array for undos
 	_checkUndoArray: function() {
 		if(this._undoPos != this._undoArray.length) {
 			while(this._undoArray.length != this._undoPos) {
