@@ -141,10 +141,18 @@ $.widget( ".svgedit", {
 		// Remove controls if present
 		d3.select(this._svg.context).select('.svgcontrols').remove();
 
-		var blob = new Blob( [ this.toString() ], { type: 'text/plain' } );
+		const canvas = document.querySelector('canvas');
+		const ctx = canvas.getContext('2d');
+    
+		// Render svg to canvas
+		var v = canvg.Canvg.fromString(ctx, this.toString());
+		v.start();
+		// Convert canvas to base64 encoded png
+		var img = canvas.toDataURL("image/png");
 
-		this._downloadlink[0].href = URL.createObjectURL( blob );
-		this._downloadlink[0].download = title.value + '.svg';
+		// Click hidden download link
+		this._downloadlink[0].href = img;
+		this._downloadlink[0].download = title.value + '.png';
 		this._downloadlink[0].click();
 	},
 
