@@ -105,6 +105,9 @@
 				<button id="save">Save</button>
 				<button id="clear">Clear</button>
 				<hr/>
+				<button id="undo">Undo</button>
+				<button id="redo">Redo</button>
+				<hr/>
 				<button id="move">Move</button>
 				<button id="paint">Paint</button>
 			</span>
@@ -219,6 +222,15 @@
 				$('#stage').svgedit('clear');
 
 			} );
+
+			// UNDO
+			undo.addEventListener('click', function() {
+				$('#stage').svgedit('undo');
+			});
+			// REDO
+			redo.addEventListener('click', function() {
+				$('#stage').svgedit('redo');
+			});
 			
 			// MOVE
 			move.addEventListener('click', function() {

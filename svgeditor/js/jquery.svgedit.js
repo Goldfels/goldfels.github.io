@@ -6,6 +6,8 @@ $.widget( ".svgedit", {
 	_selected: null,                       // currently selected svg
 	_tool: null, 						   // currently used tool
 	_lastColor: null, 					   // color for the paint tool
+	_undoArray: [], 					   // array for all the undos
+	_undoPos: 0, 						   // position of undo in undoArray
 	_source: null, 					       // source code of svg image
 	_downloadlink: null,                   // link used to download svg
 	_movement: 0,                          // what movement is the svg doing
@@ -133,6 +135,7 @@ $.widget( ".svgedit", {
 			.append('g').attr('class', 'addedsvg');
 			//.append( $(element).clone()[0] );
 		$(added._groups[0][0]).append($(element).clone());
+		this._createCheckpoint();
 	},
 
 	// change content
@@ -148,6 +151,7 @@ $.widget( ".svgedit", {
 	clear: function() {
 		this._svg.context.textContent = '';
 		this._prepSVGfield();
+		this._createCheckpoint();
 	},
 
 	// save svg
@@ -176,6 +180,21 @@ $.widget( ".svgedit", {
 		this._lastColor = color;
 		if(this._selected == null) return;
 		this._selected[0].style.fill = color;
+		this._createCheckpoint();
+	},
+
+	undo: function() {
+		// Check if we can undo
+		if(this._undoPos == 1) return;
+		this._undoPos -= 1;
+		this._svg.context.innerHTML = this._undoArray[this._undoPos - 1];
+	},
+
+	redo: function() {
+		// Check if we can redo
+		if(this._undoPos == this._undoArray.length) return;
+		this._undoPos += 1;
+		this._svg.context.innerHTML = this._undoArray[this._undoPos - 1];
 	},
 
 	// TODO: custom width and height
@@ -617,6 +636,7 @@ $.widget( ".svgedit", {
 		var transform = this._getTransformations(newelement.attr('transform'));
 		newelement[0].transform.baseVal.getItem(0).setTranslate( transform.translateX + 25, transform.translateY + 25 );
 		this._updateSelection(newelement[0]);
+		this._createCheckpoint();
 	},
 
 	_stopmoving: function() {
@@ -630,6 +650,24 @@ $.widget( ".svgedit", {
 					'scale(', transform.scaleX, ', ', transform.scaleY, ')',
 				].join('');
 			});
+		}
+		this._createCheckpoint();
+	},
+
+	_createCheckpoint: function() {
+		// If we did undos, we need to clear the array
+		this._checkUndoArray();
+		// Allow a maximum of 10 undos
+		if(this._undoPos > 10) this._undoArray.shift();
+		this._undoArray.push(this._svg.context.innerHTML);
+		this._undoPos = this._undoArray.length;
+	},
+
+	_checkUndoArray: function() {
+		if(this._undoPos != this._undoArray.length) {
+			while(this._undoArray.length != this._undoPos) {
+				this._undoArray.pop();
+			}
 		}
 	},
 
