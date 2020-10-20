@@ -4,6 +4,8 @@ $.widget( ".svgedit", {
 
 	_svg: null, 					       // svg image field
 	_selected: null,                       // currently selected svg
+	_tool: null, 						   // currently used tool
+	_lastColor: null, 					   // color for the paint tool
 	_source: null, 					       // source code of svg image
 	_downloadlink: null,                   // link used to download svg
 	_movement: 0,                          // what movement is the svg doing
@@ -41,6 +43,9 @@ $.widget( ".svgedit", {
 		var self = this;
 		var drag = d3.drag();
 
+		// Default to the move tool
+		self._tool = "move";
+
 		this._svg = this.element;
 		this._prepSVGfield();
 
@@ -49,27 +54,38 @@ $.widget( ".svgedit", {
 		}).appendTo('body');
 
 		d3.select(this._svg.context).call(drag.on("start", function() {
-			if(d3.event.sourceEvent.type == "touchstart") {
-				self._reposition(d3.event.sourceEvent.changedTouches[0]);
-			} else {
-				self._reposition(d3.event.sourceEvent);
+			// Only move with the move tool
+			if(self._tool == "move") {
+				if(d3.event.sourceEvent.type == "touchstart") {
+					self._reposition(d3.event.sourceEvent.changedTouches[0]);
+				} else {
+					self._reposition(d3.event.sourceEvent);
+				}
+			} else if(self._tool == "paint") {
+				self._paint(d3.event.sourceEvent);
 			}
 		}));
 
 		d3.select(this._svg.context).call(drag.on("end", function() {
-			self._stopmoving();
+			if(self._tool == "move") {
+				self._stopmoving();
+			}
 		}));
 
 		d3.select(this._svg.context).call(drag.on("drag", function() {
-			if(d3.event.sourceEvent.type == "touchmove") {
-				self._movesvg(d3.event.sourceEvent.changedTouches[0]);
-			} else {
-				self._movesvg(d3.event.sourceEvent);
+			if(self._tool == "move") {
+				if(d3.event.sourceEvent.type == "touchmove") {
+					self._movesvg(d3.event.sourceEvent.changedTouches[0]);
+				} else {
+					self._movesvg(d3.event.sourceEvent);
+				}
 			}
 		}));
 
 		$(this._svg).dblclick(function(event) {
-			self._duplicate(event);
+			if(self._tool == "move") {
+				self._duplicate(event);
+			}
 		});
     },
 
@@ -157,6 +173,7 @@ $.widget( ".svgedit", {
 	},
 
 	changeColor: function(color) {
+		this._lastColor = color;
 		if(this._selected == null) return;
 		this._selected[0].style.fill = color;
 	},
@@ -178,6 +195,14 @@ $.widget( ".svgedit", {
 
         this._reposition();
     },
+
+	changeTool: function(tool) {
+		// Deselect
+		this._selected = null;
+		this._updateSelection(this._svg.context);
+
+		this._tool = tool;
+	},
 
     _reposition: function (event) {
 
@@ -606,6 +631,10 @@ $.widget( ".svgedit", {
 				].join('');
 			});
 		}
+	},
+
+	_paint: function(event) {
+		event.target.style.fill = this._lastColor;
 	},
 
 	_prepSVGfield: function() {

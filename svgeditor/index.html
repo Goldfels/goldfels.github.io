@@ -104,6 +104,9 @@
 				<button id="load">Load</button>
 				<button id="save">Save</button>
 				<button id="clear">Clear</button>
+				<hr/>
+				<button id="move">Move</button>
+				<button id="paint">Paint</button>
 			</span>
 			<span id="content" style="background-color: white; margin-top: 20px;">
 				<svg id="stage" width="600" height="400" viewBox="0 0 600 400"></svg>
@@ -216,6 +219,16 @@
 				$('#stage').svgedit('clear');
 
 			} );
+			
+			// MOVE
+			move.addEventListener('click', function() {
+				$('#stage').svgedit('changeTool', 'move');
+			});
+
+			// PAINT
+			paint.addEventListener('click', function() {
+				$('#stage').svgedit('changeTool', 'paint');
+			});
 
 		</script>
 
